@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "functions": {
+    "index.php": {
+      "runtime": "vercel-php@0.7.0"
+    },
+    "index/vista/*.php": {
+      "runtime": "vercel-php@0.7.0"
+    },
+    "index/logica/*.php": {
+      "runtime": "vercel-php@0.7.0"
+    }
+  },
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/index/vista/assets/$1"
+    },
+    {
+      "src": "/index/vista/assets/(.*)",
+      "dest": "/index/vista/assets/$1"
+    },
+    {
+      "src": "^/$",
+      "dest": "/index.php"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
