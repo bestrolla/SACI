@@ -1,30 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "index.php",
-      "use": "vercel-php@0.7.0",
-      "config": {
-        "includeFiles": ["index/**"]
-      }
-    },
-    {
-      "src": "index/vista/assets/**",
-      "use": "@vercel/static"
-    }
-  ],
+  "cleanUrls": true,
   "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/index/vista/assets/$1"
-    },
-    {
-      "src": "/index/vista/assets/(.*)",
-      "dest": "/index/vista/assets/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.php"
-    }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
