@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SACI - Control de Deudas Bodega</title>
+  <meta name="description" content="Sistema de Control de Deudas y Pagos para Bodega - SACI">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <!-- Header Navbar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#home" class="brand" id="brand-link">
+        <img src="assets/img/logo1.jpg" alt="Bodega SACI" class="brand-logo" id="brand-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230ea5e9\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\'/><polyline points=\'9 22 9 12 15 12 15 22\'/></svg>'">
+        <span class="brand-name">SACI <small>Bodega</small></span>
+      </a>
+      
+      <nav class="nav-links" id="main-nav">
+        <a href="#home" class="nav-link active" data-target="page-home" id="nav-home">Inicio</a>
+        <a href="#resumen" class="nav-link" data-target="page-resumen" id="nav-resumen">Resumen</a>
+        <a href="#deudas" class="nav-link" data-target="page-deudas" id="nav-deudas">Deudas</a>
+        <a href="#nueva-deuda" class="nav-link" data-target="page-nueva-deuda" id="nav-nueva-deuda">+ Nueva Deuda</a>
+        <a href="#pagos" class="nav-link" data-target="page-pagos" id="nav-pagos">Pagos</a>
+        <a href="#clientes" class="nav-link" data-target="page-clientes" id="nav-clientes">Clientes</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="currency-toggle" class="currency-toggle" type="button" title="Cambiar visualización de moneda">Bs</button>
+        <button id="theme-toggle" class="theme-toggle" type="button" title="Cambiar tema">🌙 Oscuro</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main Container -->
+  <main class="container">
+    
+    <!-- PAGE 1: INICIO / HOME -->
+    <section id="page-home" class="page-section active">
+      <div class="page-header">
+        <h1>Control de Deudas Bodega</h1>
+        <p class="subtitle">Gestión centralizada de cuentas por cobrar, tasas de cambio y abonos</p>
+      </div>
+
+      <div id="modo-respaldo-banner" class="banner-info" style="display:none;">
+        ℹ️ Datos locales activos. Todos los cambios se guardan automáticamente en tu navegador.
+      </div>
+
+      <!-- Resumen General Cards -->
+      <div class="section-block">
+        <h2>Resumen General</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📑</div>
+            <div class="stat-info">
+              <span class="stat-label">Total de Deudas</span>
+              <strong class="stat-value" id="stat-total-deudas">0</strong>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+              <span class="stat-label">Monto Total Emitido</span>
+              <strong class="stat-value amount" id="stat-monto-total">
+                <span class="bs">Bs 0.00</span><span class="usd">$ 0.00</span>
+              </strong>
+            </div>
+          </div>
+
+          <div class="stat-card highlight">
+            <div class="stat-icon">⚖️</div>
+            <div class="stat-info">
+              <span class="stat-label">Total Pendiente Por Cobrar</span>
+              <strong class="stat-value amount" id="stat-total-pendiente">
+                <span class="bs">Bs 0.00</span><span class="usd">$ 0.00</span>
+              </strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasa del Día -->
+      <div class="section-block">
+        <h2>Tasa del Día (Dólar / Bolívares)</h2>
+        <div class="grid-2col">
+          <div class="card-box">
+            <h3>Tasa Actual Registrada</h3>
+            <div class="rate-details">
+              <div class="rate-main">
+                <span class="rate-badge">1 USD =</span>
+                <span class="rate-price" id="tasa-actual-val">Bs 0.00</span>
+              </div>
+              <div class="rate-meta">
+                <div><strong>Fecha:</strong> <span id="tasa-actual-fecha">-</span></div>
+                <div><strong>Fuente:</strong> <span id="tasa-actual-fuente">BCV</span></div>
+                <div><strong>Observaciones:</strong> <span id="tasa-actual-obs">-</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-box">
+            <h3>Actualizar Tasa del Día</h3>
+            <form id="form-tasa" class="form-compact">
+              <div class="form-group">
+                <label for="tasa-fecha">Fecha de la Tasa</label>
+                <input type="date" id="tasa-fecha" required>
+              </div>
+              <div class="form-group">
+                <label for="tasa-monto">Tasa (Bs por 1 USD)</label>
+                <input type="number" step="0.01" id="tasa-monto" placeholder="Ej. 36.50" required>
+              </div>
+              <div class="form-group">
+                <label for="tasa-fuente">Fuente</label>
+                <input type="text" id="tasa-fuente" value="BCV" required>
+              </div>
+              <div class="form-group">
+                <label for="tasa-obs">Observaciones</label>
+                <input type="text" id="tasa-obs" placeholder="Opcional">
+              </div>
+              <button type="submit" class="btn btn-primary" id="btn-save-tasa">Guardar Tasa</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historial de Tasas -->
+      <div class="section-block">
+        <h2>Historial de Tasas Registradas</h2>
+        <div class="table-responsive">
+          <table id="tbl-historial-tasas" class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tasa (Bs/USD)</th>
+                <th>Fuente</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-historial-tasas">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2: RESUMEN -->
+    <section id="page-resumen" class="page-section">
+      <div class="page-header">
+        <h1>Resumen de Deudas por Cliente</h1>
+        <p class="subtitle">Consolidado general de deudas acumuladas y saldos pendientes por cliente</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-item search-box">
+          <label for="filter-resumen">Filtrar clientes</label>
+          <input type="text" id="filter-resumen" class="filter-input" placeholder="Buscar por cliente o alias...">
+        </div>
+        <div class="toolbar-item sort-box">
+          <label for="sort-resumen">Ordenar por</label>
+          <select id="sort-resumen" class="sort-input">
+            <option value="pend_desc">Deuda mayor → menor</option>
+            <option value="pend_asc">Deuda menor → mayor</option>
+            <option value="name_asc">Cliente A → Z</option>
+            <option value="name_desc">Cliente Z → A</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table id="tbl-resumen" class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Alias</th>
+              <th># Deudas</th>
+              <th>Monto Total</th>
+              <th>Saldo Pendiente</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-resumen">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAGE 3: DEUDAS -->
+    <section id="page-deudas" class="page-section">
+      <div class="page-header">
+        <h1>Listado General de Deudas</h1>
+        <p class="subtitle">Registro detallado de facturas, fiados y cuentas registradas</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-item search-box">
+          <label for="filter-deudas">Filtrar deudas</label>
+          <input type="text" id="filter-deudas" class="filter-input" placeholder="Buscar por cliente, alias o descripción...">
+        </div>
+        <div class="toolbar-item sort-box">
+          <label for="sort-deudas">Ordenar por</label>
+          <select id="sort-deudas" class="sort-input">
+            <option value="pend_desc">Deuda mayor → menor</option>
+            <option value="pend_asc">Deuda menor → mayor</option>
+            <option value="name_asc">Cliente A → Z</option>
+            <option value="name_desc">Cliente Z → A</option>
+            <option value="date_desc">Fecha nueva → vieja</option>
+            <option value="date_asc">Fecha vieja → nueva</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table id="tbl-deudas" class="data-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Alias</th>
+              <th>Descripción</th>
+              <th>Fecha</th>
+              <th>Monto Total</th>
+              <th>Pagado</th>
+              <th>Pendiente</th>
+              <th>Historial</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-deudas">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAGE 4: NUEVA DEUDA -->
+    <section id="page-nueva-deuda" class="page-section">
+      <div class="page-header">
+        <h1>Registrar Nueva Deuda</h1>
+        <p class="subtitle">Agrega un nuevo fiado o factura a un cliente registrado</p>
+      </div>
+
+      <div class="form-container">
+        <form id="form-nueva-deuda">
+          <div class="form-group">
+            <label for="cliente-search">Cliente</label>
+            <div class="autocomplete">
+              <input type="text" id="cliente-search" placeholder="Buscar cliente por nombre o alias..." autocomplete="off" required>
+              <input type="hidden" id="id_cliente_selected" name="id_cliente" required>
+              <div id="cliente-suggest" class="autocomplete-list"></div>
+            </div>
+            <div id="cliente-selected-info" class="selected-debt-badge" style="display:none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="deuda-desc">Descripción / Artículos</label>
+            <input type="text" id="deuda-desc" name="descripcion" placeholder="Ej. Compra de víveres y charcutería" required>
+          </div>
+
+          <div class="grid-2col">
+            <div class="form-group">
+              <label for="deuda-monto">Monto Total</label>
+              <input type="number" step="0.01" id="deuda-monto" name="monto_total" placeholder="0.00" min="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="deuda-moneda">Moneda de la Deuda</label>
+              <select id="deuda-moneda" name="moneda" required>
+                <option value="BS">BS (Bolívares)</option>
+                <option value="USD">USD (Dólares)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2col">
+            <div class="form-group">
+              <label for="deuda-fecha">Fecha de Deuda</label>
+              <input type="date" id="deuda-fecha" name="fecha_deuda" required>
+            </div>
+            <div class="form-group">
+              <label for="deuda-vencimiento">Fecha de Vencimiento (Opcional)</label>
+              <input type="date" id="deuda-vencimiento" name="fecha_vencimiento">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="deuda-obs">Observaciones</label>
+            <input type="text" id="deuda-obs" name="observaciones" placeholder="Notas adicionales (opcional)">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Guardar Deuda</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PAGE 5: PAGOS -->
+    <section id="page-pagos" class="page-section">
+      <div class="page-header">
+        <h1>Registrar Pago / Abono</h1>
+        <p class="subtitle">Registra pagos individuales o amortización de deudas pendientes</p>
+      </div>
+
+      <div class="form-container">
+        <form id="form-pago">
+          <div class="form-group">
+            <label for="deuda-search">Buscar Deuda / Cliente</label>
+            <div class="autocomplete">
+              <input type="text" id="deuda-search" placeholder="Escribe el nombre del cliente o descripción..." autocomplete="off">
+              <input type="hidden" id="id_deuda_selected" name="id_deuda">
+              <input type="hidden" id="ids_deudas_multi" name="ids_deudas">
+              <div id="deuda-suggest" class="autocomplete-list"></div>
+            </div>
+            <div id="deuda-selected-info" class="selected-debt-badge" style="display:none;"></div>
+            <div id="deuda-pick-list" class="selected-debt-badge" style="display:none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="pago-metodo">Método de Pago</label>
+            <select id="pago-metodo" name="metodo" required>
+              <option value="EFECTIVO">EFECTIVO</option>
+              <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+              <option value="TARJETA">TARJETA</option>
+              <option value="PAGO-MOVIL">PAGO-MÓVIL</option>
+              <option value="BIO-PAGO">BIO-PAGO</option>
+              <option value="BS/$">BS / $ (Pago Combinado Mixto)</option>
+            </select>
+          </div>
+
+          <!-- Monto Simple -->
+          <div id="container-monto-simple" class="form-group">
+            <div class="grid-2col">
+              <div class="form-group">
+                <label for="pago-monto">Monto a Abonar</label>
+                <input type="number" step="0.01" id="pago-monto" name="monto" placeholder="0.00" min="0.01">
+              </div>
+              <div class="form-group">
+                <label for="pago-moneda">Moneda del Abono</label>
+                <select id="pago-moneda" name="moneda">
+                  <option value="BS">BS (Bolívares)</option>
+                  <option value="USD">USD (Dólares)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monto Combinado Mixto BS/$ -->
+          <div id="container-monto-dual" class="form-group" style="display:none;">
+            <label>Monto Combinado (Mixto)</label>
+            <div class="grid-2col">
+              <div>
+                <label for="pago-monto-bs">Monto en Bolívares (Bs)</label>
+                <input type="number" step="0.01" id="pago-monto-bs" name="monto_bs" placeholder="Bs 0.00">
+              </div>
+              <div>
+                <label for="pago-monto-usd">Monto en Dólares ($)</label>
+                <input type="number" step="0.01" id="pago-monto-usd" name="monto_usd" placeholder="$ 0.00">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="pago-obs">Observaciones</label>
+            <input type="text" id="pago-obs" name="observaciones" placeholder="Número de referencia, comprobante o notas">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Registrar Pago</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PAGE 6: CLIENTES -->
+    <section id="page-clientes" class="page-section">
+      <div class="page-header">
+        <h1>Gestión de Clientes</h1>
+        <p class="subtitle">Registra nuevos clientes y administra su estado</p>
+      </div>
+
+      <div class="grid-2col">
+        <div class="card-box">
+          <h3>Registrar Nuevo Cliente</h3>
+          <form id="form-cliente">
+            <div class="form-group">
+              <label for="cliente-nombre">Nombre</label>
+              <input type="text" id="cliente-nombre" placeholder="Ej. Juan" required>
+            </div>
+            <div class="form-group">
+              <label for="cliente-apellido">Apellido</label>
+              <input type="text" id="cliente-apellido" placeholder="Ej. Pérez" required>
+            </div>
+            <div class="form-group">
+              <label for="cliente-alias">Alias / Apodo (Opcional)</label>
+              <input type="text" id="cliente-alias" placeholder="Ej. Juancho">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Guardar Cliente</button>
+          </form>
+        </div>
+
+        <div class="card-box">
+          <h3>Herramientas de Respaldo</h3>
+          <p class="text-muted">Exporta o importa tus datos para mantener siempre un respaldo seguro.</p>
+          <div class="button-group">
+            <button id="btn-export-json" class="btn btn-outline">📥 Exportar Respaldos (JSON)</button>
+            <label for="btn-import-json" class="btn btn-outline" style="cursor:pointer; display:inline-block; text-align:center;">
+              📤 Importar Respaldos
+              <input type="file" id="btn-import-json" accept=".json" style="display:none;">
+            </label>
+            <button id="btn-reset-demo" class="btn btn-danger-outline">🔄 Restablecer Datos Demo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block" style="margin-top: 24px;">
+        <h2>Listado de Clientes</h2>
+        <div class="table-responsive">
+          <table id="tbl-clientes" class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre Completo</th>
+                <th>Alias</th>
+                <th>Fecha Registro</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-clientes">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Side Panel for Facturas Historial -->
+  <aside id="historial-panel" class="side-panel" aria-hidden="true">
+    <div class="panel-header">
+      <strong id="historial-panel-title">Historial de compras</strong>
+      <button type="button" id="close-panel-btn" class="close-btn" title="Cerrar">✕</button>
+    </div>
+    <div id="historial-content" class="panel-body">
+      <!-- Content populated via JS -->
+    </div>
+    <div class="panel-footer">
+      <small class="muted">Listado completo de facturas y pagos del cliente</small>
+    </div>
+  </aside>
+
+  <footer class="global-footer">
+    <div class="footer-content">
+      <span>&copy; 2026 <strong>SACI Bodega</strong> - Sistema de Control de Deudas</span>
+      <span class="footer-links">
+        <a href="#home">Inicio</a> &bull; 
+        <a href="#resumen">Resumen</a> &bull; 
+        <a href="#deudas">Deudas</a>
+      </span>
+    </div>
+  </footer>
+</body>
+</html>
