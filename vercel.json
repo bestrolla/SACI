@@ -1,28 +1,23 @@
 {
   "version": 2,
-  "functions": {
-    "index.php": {
-      "runtime": "vercel-php@0.7.0"
-    },
-    "index/vista/*.php": {
-      "runtime": "vercel-php@0.7.0"
-    },
-    "index/logica/*.php": {
-      "runtime": "vercel-php@0.7.0"
+  "builds": [
+    {
+      "src": "**/*.php",
+      "use": "vercel-php@0.7.0"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/assets/(.*)",
       "dest": "/index/vista/assets/$1"
     },
     {
-      "src": "/index/vista/assets/(.*)",
-      "dest": "/index/vista/assets/$1"
+      "src": "^/$",
+      "dest": "/index/vista/home.php"
     },
     {
-      "src": "^/$",
-      "dest": "/index.php"
+      "src": "/(home|resumen|deudas|nueva_deuda|pagos|clientes|registrar_tasa|orden|tema)\\.php",
+      "dest": "/index/vista/$1.php"
     },
     {
       "src": "/(.*)",
