@@ -1,10 +1,18 @@
 {
   "version": 2,
-  "functions": {
-    "api/**/*.php": {
-      "runtime": "vercel-php@0.6.0"
+  "builds": [
+    {
+      "src": "index.php",
+      "use": "vercel-php@0.7.0",
+      "config": {
+        "includeFiles": ["index/**"]
+      }
+    },
+    {
+      "src": "index/vista/assets/**",
+      "use": "@vercel/static"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/assets/(.*)",
@@ -16,7 +24,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/api/index.php"
+      "dest": "/index.php"
     }
   ]
 }
